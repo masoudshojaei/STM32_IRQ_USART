@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,6 +49,8 @@
 uint32_t start_time = 0;
 uint32_t end_time = 0;
 uint32_t elapsed_time = 0;
+
+uint8_t uart_tx_done = 1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -62,6 +65,16 @@ int _write(int file, char *ptr, int len)
 {
   HAL_UART_Transmit(&huart2, (uint8_t *)ptr, len, 0xFFFF);
   return len;
+}
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+  uart_tx_done = 1;
+}
+void UART_Send_IT(char *message)
+{
+    uart_tx_done = 0;
+
+    HAL_UART_Transmit_IT(&huart2,(uint8_t *)message,strlen(message));
 }
 /* USER CODE END 0 */
 
@@ -104,14 +117,17 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-    start_time = __HAL_TIM_GET_COUNTER(&htim2);
-    printf("This is a test message from STM32 using USART2!!!\r\n");
-    end_time = __HAL_TIM_GET_COUNTER(&htim2);
-    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-    elapsed_time = end_time - start_time;
+    if(uart_tx_done==1)
+    {
+      HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+      start_time = __HAL_TIM_GET_COUNTER(&htim2);
+      //printf("This is a test message from STM32 using USART2!!!\r\n");
+      UART_Send_IT("This is a test message from STM32 using USART2!!!\r\n");
+      end_time = __HAL_TIM_GET_COUNTER(&htim2);
+      HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+      elapsed_time = end_time - start_time;
+    }
     HAL_Delay(20);
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
