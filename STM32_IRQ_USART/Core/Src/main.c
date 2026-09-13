@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,7 +45,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint32_t start_time = 0;
+uint32_t end_time = 0;
+uint32_t elapsed_time = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,7 +58,11 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+int _write(int file, char *ptr, int len)
+{
+  HAL_UART_Transmit(&huart2, (uint8_t *)ptr, len, 0xFFFF);
+  return len;
+}
 /* USER CODE END 0 */
 
 /**
@@ -91,13 +97,21 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_Base_Start(&htim2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+    start_time = __HAL_TIM_GET_COUNTER(&htim2);
+    printf("This is a test message from STM32 using USART2!!!\r\n");
+    end_time = __HAL_TIM_GET_COUNTER(&htim2);
+    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+    elapsed_time = end_time - start_time;
+    HAL_Delay(20);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
